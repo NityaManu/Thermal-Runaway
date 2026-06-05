@@ -1,4 +1,4 @@
-# Thermal-Runaway
+# AI-BASED THERMAL RUNAWAY DETECTION SYSTEM FOR ELECTRIC VEHICLE BATTERIES 
 AI-powered EV battery monitoring system using ESP32, sensor fusion, and CNN-based anomaly detection for early thermal runaway detection and safety alerts.
 ## Overview
 Thermal runaway is one of the most critical safety concerns in lithium-ion batteries used in Electric Vehicles (EVs). This project presents an AI-powered battery monitoring and protection system that continuously monitors battery temperature, voltage, and current to identify unsafe operating conditions before they escalate into thermal runaway.

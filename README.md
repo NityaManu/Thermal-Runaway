@@ -46,3 +46,4 @@ The classification is based on both machine learning predictions and threshold-b
 
 ## Web Dashboard
 
+<img width="1600" height="1485" alt="image" src="https://github.com/user-attachments/assets/d2139894-c34c-41e6-a3c9-80f0c952add3" />

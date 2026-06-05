@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>EV Smart Dashboard</title>
+
+<link rel="stylesheet" href="/static/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</head>
+
+<body>
+
+<div class="overlay">
+
+<header>
+<h1>⚡ EV Battery Intelligence Dashboard</h1>
+<p>Smart Monitoring | Fire Detection | Battery AI</p>
+</header>
+
+<div class="dashboard">
+
+<div class="card">
+<h2>🌡 Temperature</h2>
+<p id="temp">0 °C</p>
+</div>
+
+<div class="card">
+<h2>🔋 Voltage</h2>
+<p id="volt">0 V</p>
+</div>
+
+<div class="card">
+<h2>⚡ Current</h2>
+<p id="curr">0 A</p>
+</div>
+
+<div class="card">
+<h2>🔋 Battery</h2>
+<p id="battery">0 %</p>
+
+<div class="battery-bar">
+<div id="battery-fill"></div>
+</div>
+</div>
+
+<div class="card">
+<h2>🧠 Battery Life</h2>
+<p id="life">0 %</p>
+</div>
+
+<div class="card alert-card">
+<h2>🚨 Vehicle Status</h2>
+<p id="status">SAFE</p>
+</div>
+
+<div class="card tips">
+<h2>🛡 Safety Tips</h2>
+<ul id="tips">
+<li>Battery operating normally.</li>
+</ul>
+</div>
+
+</div>
+
+<div class="graph-container">
+<canvas id="tempChart"></canvas>
+</div>
+
+<div class="graph-container">
+<canvas id="lifeChart"></canvas>
+</div>
+
+</div>
+
+<script>
+
+window.onload = function () {
+
+let labels = [];
+let tempData = [];
+let lifeData = [];
+
+const ctx1 = document.getElementById('tempChart');
+const ctx2 = document.getElementById('lifeChart');
+
+if (!ctx1 || !ctx2) {
+    console.error("Canvas not found!");
+    return;
+}
+
+// 🔹 Temperature Chart
+const tempChart = new Chart(ctx1.getContext('2d'), {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [{
+            label: 'Temperature (°C)',
+            data: [],
+            borderWidth: 3,
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: 'white' } } },
+        scales: {
+            x: { ticks: { color: 'white' } },
+            y: { ticks: { color: 'white' } }
+        }
+    }
+});
+
+// 🔹 Battery Chart
+const lifeChart = new Chart(ctx2.getContext('2d'), {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [{
+            label: 'Battery Life (%)',
+            data: [],
+            borderWidth: 3,
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { labels: { color: 'white' } } },
+        scales: {
+            x: { ticks: { color: 'white' } },
+            y: { ticks: { color: 'white' } }
+        }
+    }
+});
+
+// 🔁 Fetch + Update
+function updateData() {
+
+    fetch('/data')
+    .then(res => res.json())
+    .then(data => {
+
+        if (!data || !data.temperature) return;
+
+        // 🔹 Update values
+        document.getElementById("temp").innerHTML = data.temperature + " °C";
+        document.getElementById("volt").innerHTML = data.voltage + " V";
+        document.getElementById("curr").innerHTML = data.current + " A";
+        document.getElementById("battery").innerHTML = data.battery.toFixed(1) + " %";
+        document.getElementById("life").innerHTML = data.battery.toFixed(1) + " %";
+        document.getElementById("status").innerHTML = data.status;
+
+        // 🔹 Battery bar
+        let fill = document.getElementById("battery-fill");
+        if (fill) fill.style.width = data.battery + "%";
+
+        // 🔹 Graph update
+        if (data.history && data.history.length > 0) {
+
+            labels = data.history.map(x => x.time);
+            tempData = data.history.map(x => x.temperature);
+            lifeData = data.history.map(x => x.battery);
+
+            tempChart.data.labels = labels;
+            tempChart.data.datasets[0].data = tempData;
+
+            lifeChart.data.labels = labels;
+            lifeChart.data.datasets[0].data = lifeData;
+
+            tempChart.update();
+            lifeChart.update();
+        }
+
+        // 🔹 Safety tips
+        let tips = document.getElementById("tips");
+
+        if (data.temperature >= 50) {
+            tips.innerHTML = `
+            <li>🔥 Stop vehicle immediately</li>
+            <li>🚨 Fire risk detected</li>
+            <li>📞 Call service center</li>
+            <li>⚠ Do not charge battery</li>
+            `;
+        }
+        else if (data.temperature >= 40) {
+            tips.innerHTML = `
+            <li>⚠ Battery warming</li>
+            <li>🚗 Reduce speed</li>
+            <li>🧊 Cool battery</li>
+            `;
+        }
+        else {
+            tips.innerHTML = `
+            <li>✅ Safe condition</li>
+            <li>🚗 Continue driving</li>
+            `;
+        }
+
+        // 🔹 Status color
+        let status = document.getElementById("status");
+
+        if (data.status === "SAFE") status.style.color = "lime";
+        else if (data.status === "WARNING") status.style.color = "orange";
+        else status.style.color = "red";
+
+    })
+    .catch(err => console.error("Fetch error:", err));
+}
+
+// 🔁 Run every 2 sec
+setInterval(updateData, 2000);
+updateData();
+
+};
+
+</script>
+
+</body>
+</html>
